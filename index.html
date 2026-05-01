@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💌 Surat Untukmu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #a8d8ea 0%, #f0f0ff 30%, #e8d5f5 60%, #aa96da 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body.letter-opened {
+            overflow-y: auto;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        /* ===== PARTICLES ===== */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+            opacity: 0.4;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.4; }
+            90% { opacity: 0.4; }
+            100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+        }
+
+        /* ===== STARS ===== */
+        .star {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* ===== MUSIC BUTTON ===== */
+        .music-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #a8d8ea, #aa96da);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(170, 150, 218, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(170, 150, 218, 0.6);
+        }
+
+        .equalizer {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 18px;
+        }
+
+        .eq-bar {
+            width: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: height 0.3s;
+        }
+
+        .music-btn.playing .eq-bar:nth-child(1) { animation: eqBar 0.5s ease-in-out infinite alternate; height: 8px; }
+        .music-btn.playing .eq-bar:nth-child(2) { animation: eqBar 0.4s ease-in-out infinite alternate 0.1s; height: 14px; }
+        .music-btn.playing .eq-bar:nth-child(3) { animation: eqBar 0.6s ease-in-out infinite alternate 0.2s; height: 10px; }
+        .music-btn.playing .eq-bar:nth-child(4) { animation: eqBar 0.5s ease-in-out infinite alternate 0.3s; height: 16px; }
+        .music-btn.playing .eq-bar:nth-child(5) { animation: eqBar 0.4s ease-in-out infinite alternate 0.15s; height: 6px; }
+
+        .music-btn:not(.playing) .eq-bar { height: 4px !important; animation: none !important; }
+
+        @keyframes eqBar {
+            0% { height: 4px; }
+            100% { height: 18px; }
+        }
+
+        /* ===== ENVELOPE ===== */
+        .envelope-container {
+            position: relative;
+            z-index: 10;
+            cursor: pointer;
+            animation: floatEnvelope 3s ease-in-out infinite;
+            transition: all 0.8s ease;
+        }
+
+        .envelope-container.hidden {
+            opacity: 0;
+            transform: scale(0.5) translateY(-50px);
+            pointer-events: none;
+            position: absolute;
+        }
+
+        @keyframes floatEnvelope {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .envelope {
+            width: 280px;
+            height: 180px;
+            background: linear-gradient(145deg, #a8d8ea, #87c4d9);
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 15px 40px rgba(135, 196, 217, 0.4), 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+
+        .envelope:hover {
+            box-shadow: 0 20px 50px rgba(135, 196, 217, 0.6), 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-top: 100px solid #8ec5d6;
+            transform-origin: top center;
+            transition: transform 0.6s ease;
+            z-index: 2;
+        }
+
+        .envelope-container.opened .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .envelope-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-bottom: 100px solid #93d0e3;
+            z-index: 1;
+        }
+
+        /* Heart Seal */
+        .seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            font-size: 35px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 2px 8px rgba(170, 150, 218, 0.5));
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.15); }
+        }
+
+        .click-text {
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 300;
+            animation: fadeInOut 2s ease-in-out infinite;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* ===== LETTER ===== */
+        .letter-container {
+            display: none;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            animation: letterSlideUp 0.8s ease forwards;
+        }
+
+        .letter-container.show {
+            display: block;
+        }
+
+        @keyframes letterSlideUp {
+            from { opacity: 0; transform: translateY(60px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .letter {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(170, 150, 218, 0.25), 0 5px 20px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .letter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #a8d8ea, #aa96da, #a8d8ea);
+        }
+
+        .letter-decoration {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .letter h2 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 32px;
+            background: linear-gradient(135deg, #7ab8d4, #9a7fbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .letter-divider {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #a8d8ea, #aa96da);
+            margin: 15px auto;
+            border-radius: 10px;
+        }
+
+        .letter p {
+            color: #5a5a7a;
+            font-size: 16px;
+            line-height: 1.8;
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: 300;
+        }
+
+        .letter p.main-message {
+            font-size: 18px;
+            font-weight: 400;
+            color: #4a4a6a;
+        }
+
+        .letter p.signature {
+            font-family: 'Dancing Script', cursive;
+            font-size: 22px;
+            color: #aa96da;
+            margin-top: 20px;
+        }
+
+        /* Photo */
+        .letter-photo {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 15px;
+            display: block;
+            margin: 20px auto;
+            box-shadow: 0 8px 25px rgba(170, 150, 218, 0.3);
+            border: 4px solid #f0f0ff;
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #f0f8ff, #f5f0ff);
+            border: 3px dashed #c8b8e8;
+            font-size: 50px;
+        }
+
+        /* Close Button */
+        .close-btn {
+            display: block;
+            margin: 25px auto 0;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #a8d8ea, #aa96da);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(170, 150, 218, 0.3);
+        }
+
+        .close-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(170, 150, 218, 0.5);
+        }
+
+        .footer-decoration {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .envelope { width: 240px; height: 155px; }
+            .envelope-flap { border-left-width: 120px; border-right-width: 120px; border-top-width: 85px; }
+            .envelope-inner { border-left-width: 120px; border-right-width: 120px; border-bottom-width: 85px; }
+            .letter { padding: 30px 22px; }
+            .letter h2 { font-size: 26px; }
+            .letter p { font-size: 14px; }
+            .music-btn { top: 12px; right: 12px; padding: 10px 15px; font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AUDIO -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- MUSIC BUTTON -->
+    <button class="music-btn playing" id="musicBtn" onclick="toggleMusic()">
+        <div class="equalizer">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+        </div>
+        <span id="musicLabel">Now Playing</span>
+    </button>
+
+    <!-- PARTICLES -->
+    <div class="particles" id="particles"></div>
+
+    <!-- ENVELOPE -->
+    <div class="envelope-container" id="envelopeContainer" onclick="openEnvelope()">
+        <div class="envelope" id="envelope">
+            <div class="envelope-inner"></div>
+            <div class="envelope-flap"></div>
+            <div class="seal">💜</div>
+        </div>
+        <p class="click-text">✨ Tap untuk membuka ✨</p>
+    </div>
+
+    <!-- LETTER -->
+    <div class="letter-container" id="letterContainer">
+        <div class="letter">
+            <div class="letter-decoration">✉️ 💌 ✉️</div>
+            <h2>Hai 👋</h2>
+            <div class="letter-divider"></div>
+
+            <p class="main-message">
+                Terima kasih sudah berjuang untuk dirimu.
+            </p>
+            <p>
+                Kamu hebat, lebih dari yang kamu kira.<br>
+                Setiap langkah kecil yang kamu ambil itu berarti. 🌷
+            </p>
+
+            <div class="letter-divider"></div>
+
+            <!-- FOTO: Ganti src="foto.jpg" dengan file foto kamu -->
+            <!-- <img src="foto.jpg" alt="Foto" class="letter-photo"> -->
+            <div class="photo-placeholder">🌸</div>
+
+            <p class="signature">— Dengan sayang 💜</p>
+
+            <button class="close-btn" onclick="closeLetter()">💌 Tutup Surat</button>
+        </div>
+        <div class="footer-decoration">made with 💜</div>
+    </div>
+
+    <script>
+        const music = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicBtn');
+        const musicLabel = document.getElementById('musicLabel');
+        let isPlaying = false;
+
+        // ===== AUTOPLAY MUSIC =====
+        function tryAutoplay() {
+            music.play().then(() => {
+                isPlaying = true;
+                musicBtn.classList.add('playing');
+                musicLabel.textContent = 'Now Playing';
+            }).catch(() => {
+                // Browser blokir autoplay, tunggu user klik/tap apapun
+                isPlaying = false;
+                musicBtn.classList.remove('playing');
+                musicLabel.textContent = 'Tap to Play';
+                document.addEventListener('click', playOnFirstInteraction, { once: true });
+                document.addEventListener('touchstart', playOnFirstInteraction, { once: true });
+                document.addEventListener('scroll', playOnFirstInteraction, { once: true });
+            });
+        }
+
+        function playOnFirstInteraction() {
+            if (!isPlaying) {
+                music.play().then(() => {
+                    isPlaying = true;
+                    musicBtn.classList.add('playing');
+                    musicLabel.textContent = 'Now Playing';
+                }).catch(() => {});
+            }
+        }
+
+        // Jalankan autoplay saat halaman load
+        window.addEventListener('load', tryAutoplay);
+
+        // ===== TOGGLE MUSIC =====
+        function toggleMusic() {
+            if (isPlaying) {
+                music.pause();
+                isPlaying = false;
+                musicBtn.classList.remove('playing');
+                musicLabel.textContent = 'Play Music';
+            } else {
+                music.play().then(() => {
+                    isPlaying = true;
+                    musicBtn.classList.add('playing');
+                    musicLabel.textContent = 'Now Playing';
+                }).catch(() => {});
+            }
+        }
+
+        // ===== OPEN ENVELOPE =====
+        function openEnvelope() {
+            const container = document.getElementById('envelopeContainer');
+            const letterContainer = document.getElementById('letterContainer');
+
+            container.classList.add('opened');
+
+            setTimeout(() => {
+                container.classList.add('hidden');
+                letterContainer.classList.add('show');
+                document.body.classList.add('letter-opened');
+            }, 800);
+        }
+
+        // ===== CLOSE LETTER =====
+        function closeLetter() {
+            const container = document.getElementById('envelopeContainer');
+            const letterContainer = document.getElementById('letterContainer');
+
+            letterContainer.classList.remove('show');
+            document.body.classList.remove('letter-opened');
+
+            setTimeout(() => {
+                container.classList.remove('hidden', 'opened');
+            }, 300);
+        }
+
+        // ===== GENERATE PARTICLES =====
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const colors = ['#a8d8ea', '#aa96da', '#d4c5f9', '#c8e6f0', '#f0f0ff'];
+
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                const size = Math.random() * 12 + 4;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.animationDuration = (Math.random() * 10 + 8) + 's';
+                particle.style.animationDelay = (Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // ===== GENERATE STARS =====
+        function createStars() {
+            for (let i = 0; i < 25; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                star.style.animationDelay = (Math.random() * 3) + 's';
+                document.body.appendChild(star);
+            }
+        }
+
+        createParticles();
+        createStars();
+    </script>
+</body>
+</html>
